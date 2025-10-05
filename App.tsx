@@ -15,7 +15,7 @@ function App(): React.JSX.Element {
     <Provider store={store}>
       <SafeAreaProvider>
         <NavigationContainer>
-          <StatusBar barStyle="dark-content" />
+          <StatusBar barStyle="light-content" />
           <AppNavigator />
         </NavigationContainer>
       </SafeAreaProvider>

@@ -14,7 +14,7 @@ import apiClient from '../../../apiClient';
 // Function to fetch all products from the backend
 export const getDemandedProducts = async () => {
   try {
-    const response = await apiClient.get('/demanded-products');
+    const response = await apiClient.get('products/demanded-products');
     console.log('demanded-profv jdsbn',response.data)
     console.log('image1', response.data[0].imageUrls[0])
     return response.data;
@@ -26,7 +26,7 @@ export const getDemandedProducts = async () => {
 
 export const getProducts = async () => {
   try {
-    const response = await apiClient.get('/products');
+    const response = await apiClient.get('products/products');
     console.log('all products hhjdvs', response.data)
     return response.data;
   } catch (error) {
@@ -35,9 +35,14 @@ export const getProducts = async () => {
   }
 };
 
-export const getCartProducts = async () => {
+export const getCartProducts = async (token) => {
   try {
-    const response = await apiClient.get('/cart-products');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    }
+    const response = await apiClient.get('/cart', config);
     console.log('cart products hhjdvs', response.data)
     return response.data;
   } catch (error) {
