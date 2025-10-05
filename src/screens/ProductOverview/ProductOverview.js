@@ -11,12 +11,26 @@ import {
   FlatList,
   Dimensions,
   Modal,
+  UIManager,
+  Platform,
+  LayoutAnimation,
 } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import RenderHTML from 'react-native-render-html';
+import Icon from 'react-native-vector-icons/Feather';
+import Header from '../../components/header';
+import Footer from '../../components/footer';
 import { colors } from '../../constants/colors';
 
 const { width, height } = Dimensions.get('window');
+
+// Enable LayoutAnimation for Android
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 // Dummy data for testing purposes
 const dummyProduct = {
@@ -42,9 +56,9 @@ const ProductOverviewScreen = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   // Add state for modal visibility and selected image
   const [isModalVisible, setModalVisible] = useState(false);
-  //   const [selectedImage, setSelectedImage] = useState(null);
+  // const [selectedImage, setSelectedImage] = useState(null);
   const [initialImageIndex, setInitialImageIndex] = useState(0);
-
+  const [isDescriptionExpanded, setDescriptionExpanded] = useState(false);
   // This ref helps determine which image is currently visible in the carousel
   const onViewRef = useRef(({ viewableItems }) => {
     if (viewableItems.length > 0) {
@@ -71,13 +85,23 @@ const ProductOverviewScreen = () => {
   const decrementQuantity = () =>
     setQuantity(prev => (prev > 1 ? prev - 1 : 1));
 
+  const toggleDescription = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setDescriptionExpanded(!isDescriptionExpanded);
+  };
+
   const allImages =
     product.imageUrls && product.imageUrls.length > 0
       ? product.imageUrls
       : [product.mainImageUrl];
 
+  // Strip HTML for a plain text version for truncation
+  const plainDescription = product.description?.replace(/<[^>]*>?/gm, '') || '';
+  const isLongDescription = plainDescription.length > 100;
+
   return (
     <SafeAreaView style={styles.container}>
+      <Header />
       <ScrollView>
         {/* Image Carousel */}
         <View style={styles.carouselContainer}>
@@ -117,17 +141,67 @@ const ProductOverviewScreen = () => {
 
         <View style={styles.detailsContainer}>
           <Text style={styles.name}>{product.name}</Text>
-          <Text style={styles.price}>₹ {product.price.toFixed(2)}</Text>
+          <View style={styles.priceRow}>
+            <Text style={styles.price}>₹ {product.price.toFixed(2)}</Text>
+            <View style={styles.quantityContainer}>
+              <TouchableOpacity
+                onPress={decrementQuantity}
+                style={styles.quantityButton}
+              >
+                <Text style={styles.quantityButtonText}>-</Text>
+              </TouchableOpacity>
+              <Text style={styles.quantity}>{quantity}</Text>
+              <TouchableOpacity
+                onPress={incrementQuantity}
+                style={styles.quantityButton}
+              >
+                <Text style={styles.quantityButtonText}>+</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <TouchableOpacity
+            style={styles.addToCartButton}
+            onPress={handleAddToCart}
+          >
+            <Text style={styles.addToCartButtonText}>Add to Cart</Text>
+          </TouchableOpacity>
+
           <View style={styles.divider} />
           <Text style={styles.descriptionTitle}>Description</Text>
-          <RenderHTML
-            contentWidth={width}
-            source={{ html: product.description || '' }}
-            tagsStyles={tagsStyles}
-          />        </View>
+          {isDescriptionExpanded ? (
+            <RenderHTML
+              contentWidth={width}
+              source={{ html: product.description || '' }}
+              tagsStyles={tagsStyles}
+            />
+          ) : (
+            <Text style={tagsStyles.body}>
+              {isLongDescription
+                ? `${plainDescription.substring(0, 500)}...`
+                : plainDescription}
+            </Text>
+          )}
+
+          {isLongDescription && (
+            <TouchableOpacity
+              onPress={toggleDescription}
+              style={styles.readMoreButton}
+            >
+              <Text style={styles.readMoreText}>
+                {isDescriptionExpanded ? 'Read Less' : 'Read More'}
+              </Text>
+              <Icon
+                name={isDescriptionExpanded ? 'chevron-up' : 'chevron-down'}
+                size={20}
+                color={colors.primary}
+              />
+            </TouchableOpacity>
+          )}
+        </View>
       </ScrollView>
 
-      <View style={styles.footer}>
+      {/* <View style={styles.footer}>
         <View style={styles.quantityContainer}>
           <TouchableOpacity
             onPress={decrementQuantity}
@@ -149,7 +223,8 @@ const ProductOverviewScreen = () => {
         >
           <Text style={styles.addToCartButtonText}>Add to Cart</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
+      <Footer />
 
       {/* 5. Add the Modal component */}
       <Modal
@@ -209,6 +284,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingBottom:70
   },
   carouselContainer: {
     height: 300,
@@ -239,7 +315,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   name: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
   },
@@ -303,6 +379,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
+    marginTop: 20,
   },
   addToCartButtonText: {
     color: '#fff',
@@ -338,6 +415,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#333',
     borderRadius: 100,
     fontWeight: 'bold',
+  },
+  priceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 8,
   },
 });
 

@@ -28,9 +28,9 @@ const MainStack = () => (
   <Stack.Navigator>
     {/* <Stack.Screen name="MainTabs" component={MainTabs} /> */}
     <Stack.Screen name="Home" component={HomeScreen} options={{ headerShown: false, animation: 'none' }}/>
-    <Stack.Screen name="ProductList" component={ProductList} options={{ title: 'Products' }}/>
+    <Stack.Screen name="ProductList" component={ProductList} options={{ headerShown: false, animation: 'none' }}/>
     <Stack.Screen name="CartScreen" component={CartScreen} options={{ headerShown: false, animation: 'none' }}/>
-    <Stack.Screen name="ProductOverview" component={ProductOverview} options={{ title: 'ProductOverview' }}/>
+    <Stack.Screen name="ProductOverview" component={ProductOverview} options={{ headerShown: false, animation: 'none' }}/>
   </Stack.Navigator>
 );
 
